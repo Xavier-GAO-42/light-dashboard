@@ -1,5 +1,7 @@
 # Light Dashboard 协作协议
 
+[简体中文](AGENTS.md) · [English](AGENTS.en.md)
+
 目标：让多个 Agent 在没有中央调度服务的情况下，共享事实、避免互相覆盖，并把结果交给人类流式监督和最终验收。
 
 ## 只有一个事实源

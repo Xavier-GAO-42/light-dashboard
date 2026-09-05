@@ -2,6 +2,8 @@
 
 **超轻量化多 Agent 协作交付工作站**
 
+[简体中文](README.md) · [English](README.en.md)
+
 ## 作者的话
 
 最近在开发一个体量很大的软件项目，横跨代码开发、宣传发布、自动化研究等多种工作。
@@ -31,6 +33,8 @@
 ---
 
 Light Dashboard 不是项目管理平台，而是一份很小的多 Agent 协作协议：每个任务是一个 Markdown 文件，Agent 直接读写，人类通过本地网页观察。没有账号、数据库、消息总线、固定组织结构，也没有隐藏状态。
+
+更准确地说，它是一个**协作架构模式和可运行参考实现**，不是要替代 GitHub Issues、Linear 或 Jira。它解决的是更窄的问题：多个能操作同一代码库的 Agent，如何在没有常驻总调度器的情况下共享工作事实、避免重叠，并把过程持续暴露给人类。
 
 ## 第一性原理
 
@@ -69,6 +73,26 @@ docs/tasks/active/*.md ──approve──▶ docs/tasks/archive/*.md
 
 `stream` 是任意文本。Agent 可以按当下工作自行创建 `frontend`、`research/model-memory`、`launch-week`，或完全不分流。仓库不预设 L / G / P / R，也不限制能有多少条线。
 
+### 为什么不放“任务线 1 / 任务线 2”
+
+空编号会暗示系统预先规定了组织结构。更好的示范是两个有含义、但显然可以替换的名字：
+
+```yaml
+# 任务 A
+stream: product/frontend
+
+# 任务 B
+stream: research/agent-memory
+```
+
+它们不会创建目录、权限或新工作流，只让网页把相关任务聚在一起。下一个项目完全可以使用 `client/acme`、`paper/experiments`，或者一个 stream 都不用。
+
+## 为什么现在可行
+
+这不是因为 Markdown 变强了，而是 Agent 变强了。在我的实际工作流里，GPT-5.5 集群仍需要“塔台”频繁解释上下文和安排交接；到 GPT-6 与 Fable 这一代，只要共享事实足够清楚、文件所有权足够明确，它们已经能长时间执行、等待其他线程、读取交付并自主继续。
+
+这里的“去中心化”不是分布式系统意义上的无中心共识，而是**不再需要一个人或模型持续转发每一条消息**。Git、文件系统和最终的人类审核依然是明确的协调边界。
+
 ## 30 秒开始
 
 需要 Node.js 20+，无需安装依赖。
@@ -97,7 +121,13 @@ npm run board:check
 node tools/board/task.mjs approve <id>
 ```
 
-协作约定见 [`AGENTS.md`](AGENTS.md)，Claude/Fable 入口见 [`CLAUDE.md`](CLAUDE.md)，Task MD 协议见 [`docs/tasks/README.md`](docs/tasks/README.md)。
+协作约定见 [`AGENTS.md`](AGENTS.md)，Claude/Fable 入口见 [`CLAUDE.md`](CLAUDE.md)，Task MD 协议见 [`docs/tasks/README.md`](docs/tasks/README.md)。完整英文版包括 [`README.en.md`](README.en.md)、[`AGENTS.en.md`](AGENTS.en.md) 和 [`CLAUDE.en.md`](CLAUDE.en.md)。
+
+## 适用边界
+
+适合：共享一个本地仓库或能通过 Git 同步、任务可拆成明确文件边界、希望人类流式监督、又不想部署协作后台的小团队。
+
+不适合：需要跨组织权限控制、强实时一致性、审计合规、复杂依赖排程或数百人共同操作的团队。本地 `.board.lock` 只解决同一文件系统上的短写入互斥，不是跨机器分布式锁。
 
 ## 文件
 

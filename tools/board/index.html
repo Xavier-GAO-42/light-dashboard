@@ -11,12 +11,12 @@
 <body>
   <header>
     <h1>Light Dashboard</h1>
-    <input id="search" type="search" placeholder="搜索任务、负责人或正文…">
-    <select id="stream" aria-label="按 stream 筛选"><option value="">全部 stream</option></select>
-    <select id="scope" aria-label="按状态筛选"><option value="active">活动任务</option><option value="done">已归档</option></select>
+    <input id="search" type="search" placeholder="Search / 搜索任务…">
+    <select id="stream" aria-label="Filter by stream / 按 stream 筛选"><option value="">All streams / 全部</option></select>
+    <select id="scope" aria-label="Filter by status / 按状态筛选"><option value="active">Active / 活动</option><option value="done">Archive / 归档</option></select>
   </header>
   <main>
-    <p class="intro">网页是只读投影。Agent 直接更新 <code>docs/tasks/</code>，这里每两秒刷新一次。</p>
+    <p class="intro">Read-only projection / 只读投影。Agents update <code>docs/tasks/</code> directly; this page refreshes every two seconds.</p>
     <div id="summary" class="summary"></div>
     <div id="board"><div class="empty">正在读取 Task MD…</div></div>
   </main>
@@ -48,7 +48,7 @@
     function updateStreams(){
       const select=document.querySelector('#stream'); const previous=select.value;
       const names=[...new Set(state.tasks.map(task=>task.stream??'未分流'))].sort();
-      select.innerHTML='<option value="">全部 stream</option>'+names.map(name=>`<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join('');
+      select.innerHTML='<option value="">All streams / 全部</option>'+names.map(name=>`<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join('');
       if(names.includes(previous)) select.value=previous;
     }
     async function refresh(){
