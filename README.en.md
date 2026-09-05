@@ -6,11 +6,11 @@
 
 ## Author's note
 
-I have been building a large software project spanning code development, launch and communications, automated research, and several other kinds of work.
+I have been building a large software project that spans code development, launch and communications, automated research, and several other kinds of work.
 
-On my local computer, I assembled a nearly dependency-free, no-database protocol that uses Markdown as the single source of truth. Five GPT-6 threads and Fable share information, coordinate ownership, and deliver work through a local web view while a human supervises the process as it unfolds.
+To run it, I assembled a nearly dependency-free, no-database protocol on my local computer that uses Markdown as the single source of truth. Five GPT-6 threads and Fable share information, coordinate on their own, and deliver work in order through a local web view, while a human supervises the whole process as it unfolds.
 
-Only a few months earlier, the same method with a GPT-5.5 cluster still required a central “chief architect” or control tower to coordinate handoffs. Now five primary threads and many sub-agents can cooperate with surprisingly little central intervention or friction.
+Only a few months earlier, the same method with a GPT-5.5 cluster still needed a central "chief architect", or control tower, to coordinate handoffs. Now five primary threads and many sub-agents cooperate efficiently in a decentralized way, with very little friction.
 
 My reaction when it started running on its own: **nuclear-grade slouch.**
 
@@ -32,19 +32,19 @@ My reaction when it started running on its own: **nuclear-grade slouch.**
 
 ---
 
-Light Dashboard is not a project-management platform. It is a small multi-agent coordination protocol: every task is a Markdown file, agents read and write those files directly, and humans observe a local web projection. There are no accounts, databases, message buses, fixed organizational structures, or hidden task states.
+Light Dashboard is not a project-management platform. It is a small multi-agent coordination protocol: every task is a Markdown file, agents read and write those files directly, and humans observe through a local web projection. There are no accounts, databases, message buses, or fixed organizational structures, and no hidden task state.
 
-The most accurate description is **a coordination pattern with a runnable reference implementation**. It does not try to replace GitHub Issues, Linear, or Jira. It addresses a narrower question: when several agents can operate on the same repository, how can they share work facts, avoid overlap, and expose progress to humans without an always-on central orchestrator?
+More precisely, it is **a coordination pattern with a runnable reference implementation**. It does not try to replace GitHub Issues, Linear, or Jira. It addresses a narrower question: when several agents can operate on the same repository, how do they share work facts, avoid overlap, and keep their progress visible to humans without an always-on central orchestrator?
 
 ## First principles
 
 ### 1. Shared facts must be visible
 
-Chat context belongs to one thread; it cannot serve as team state. Task MD is the shared delivery record that every agent and human can read and Git can track.
+Chat context belongs to one thread and cannot serve as team state. The Task MD is the shared delivery record that every agent and human reads and that Git can track.
 
 ### 2. Coordination comes from ownership, not constant routing
 
-One task, one file; one owner per file at a time. Agents can run independently when their file boundaries do not overlap. When ownership overlaps, they serialize or explicitly hand off.
+One task, one file; one owner per file at a time. Agents run in parallel when their tasks do not overlap. When ownership overlaps, they serialize or hand off explicitly. No control tower has to relay each message.
 
 ### 3. Progress is content, not another state machine
 
@@ -52,11 +52,11 @@ The executor writes `## Plan`, `## Progress`, and verification evidence into the
 
 ### 4. Delivery and acceptance are separate
 
-There are only three states: `todo → review → done`. An agent submits a completed delivery for review; a human archives it after acceptance. A host project may define code-integration policy separately.
+There are only three states: `todo → review → done`. An agent submits finished work for review, and a human archives it after acceptance. Whether code is merged is defined separately by the host project.
 
 ### 5. The web page is only a projection
 
-The page rereads Markdown every two seconds. It searches, groups, displays, and copies execution prompts. Close the page and the protocol still works; delete the page and the complete task record remains.
+The page rereads the Markdown every two seconds. It searches, groups, displays, and copies execution prompts. Close the page and the protocol still works; delete the page and the complete task record remains.
 
 ## Minimal architecture
 
@@ -71,11 +71,9 @@ docs/tasks/active/*.md ──approve──▶ docs/tasks/archive/*.md
 
 A task has four required fields: `id`, `title`, `status`, and `created`. `owner`, `stream`, and `due` are optional hints, not an authorization system.
 
-`stream` is arbitrary text. Agents may create `frontend`, `research/model-memory`, or `launch-week`, use any number of streams, or use none at all. The repository does not encode fixed lanes.
+`stream` is arbitrary text. Agents may create `frontend`, `research/model-memory`, or `launch-week` as the work requires, use any number of streams, or use none at all. The repository does not encode fixed lanes.
 
-### Why there is no “Task Lane 1 / Task Lane 2”
-
-Empty numbered lanes imply that the system owns the organization structure. Semantic examples make the freedom clearer:
+### Example streams
 
 ```yaml
 # Task A
@@ -89,9 +87,9 @@ These values create no directories, permissions, or workflows. They only group r
 
 ## Why this works now
 
-Markdown did not suddenly become more capable; agents did. In my own workflow, GPT-5.5 clusters still required a control tower to restate context and coordinate handoffs. With GPT-6 and Fable, sufficiently explicit shared facts and file ownership let agents execute for longer, wait for other threads, inspect deliveries, and continue with much less central intervention.
+Markdown did not become more capable; agents did. In my own workflow, GPT-5.5 clusters still needed a control tower to restate context and arrange handoffs. With GPT-6 and Fable, once shared facts and file ownership are explicit enough, agents can execute for long stretches, wait for other threads, read their deliveries, and continue on their own.
 
-“Decentralized” here does not mean leaderless consensus in the distributed-systems sense. It means that no human or model must continuously relay every message. Git, the filesystem, and final human acceptance remain explicit coordination boundaries.
+"Decentralized" here does not mean leaderless consensus in the distributed-systems sense. It means that **no human or model has to keep relaying every message**. Git, the filesystem, and final human acceptance remain explicit coordination boundaries.
 
 ## Three-minute start
 
@@ -101,13 +99,13 @@ Requires Node.js 20+ and no package installation.
 npm run board
 ```
 
-Open `http://127.0.0.1:4790`. In another terminal:
+Open `http://127.0.0.1:4790`. In another terminal, create a task:
 
 ```powershell
 node tools/board/task.mjs add --title "Deliver one verifiable result" --owner gpt-6 --stream product/frontend
 ```
 
-After an agent implements and verifies the work:
+After the agent finishes and verifies the work:
 
 ```powershell
 node tools/board/task.mjs done <id> --feedback "Result and verification evidence"
@@ -125,7 +123,7 @@ See [`AGENTS.en.md`](AGENTS.en.md) for the complete operating contract, [`CLAUDE
 
 ## Where it fits
 
-Good fit: a small team working in one local repository or synchronizing through Git, with tasks that can be split into explicit file boundaries, a need for streaming human supervision, and no desire to deploy a coordination backend.
+Good fit: a small team that shares one local repository or synchronizes through Git, can split tasks along explicit file boundaries, wants streaming human supervision, and does not want to deploy a coordination backend.
 
 Poor fit: cross-organization authorization, strong real-time consistency, regulated audit controls, complex dependency scheduling, or hundreds of concurrent operators. The local `.board.lock` only serializes short writes on one filesystem; it is not a distributed lock.
 
