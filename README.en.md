@@ -121,6 +121,22 @@ node tools/board/task.mjs approve <id>
 
 See [`AGENTS.en.md`](AGENTS.en.md) for the complete operating contract, [`CLAUDE.en.md`](CLAUDE.en.md) for the compact Fable/Claude entry prompt, and [`docs/tasks/README.en.md`](docs/tasks/README.en.md) for the file protocol. The Chinese originals are [`AGENTS.md`](AGENTS.md) and [`CLAUDE.md`](CLAUDE.md).
 
+## Install into your project
+
+Hand the following to an agent that can read and write the target repository:
+
+```text
+Install https://github.com/Xavier-GAO-42/light-dashboard into the current repository, keeping relative paths:
+1. Copy the whole tools/board/ directory, plus docs/tasks/README.md, docs/tasks/README.en.md, docs/tasks/TASK-TEMPLATE.md, AGENTS.md, AGENTS.en.md, CLAUDE.md, and CLAUDE.en.md.
+2. Do not copy the tasks in docs/tasks/active/ and docs/tasks/archive/, docs/images/, or the two root README files.
+3. Add "board": "node tools/board/server.mjs" and "board:check": "node tools/board/check.mjs" to the scripts in package.json; create package.json if it does not exist.
+4. Add docs/tasks/.board.lock to .gitignore.
+5. If the repository already has AGENTS.md or CLAUDE.md, do not overwrite them; stop and tell me.
+6. Run npm run board:check and expect the output 无任务 (no tasks). Run npm run board and confirm http://127.0.0.1:4790 opens.
+```
+
+Requires Node.js 20+. `docs/tasks/active/` and `docs/tasks/archive/` are created automatically on the first `add` and `approve`.
+
 ## Where it fits
 
 Good fit: a small team that shares one local repository or synchronizes through Git, can split tasks along explicit file boundaries, wants streaming human supervision, and does not want to deploy a coordination backend.

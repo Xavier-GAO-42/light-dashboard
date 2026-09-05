@@ -121,6 +121,22 @@ node tools/board/task.mjs approve <id>
 
 协作约定见 [`AGENTS.md`](AGENTS.md)，Claude/Fable 入口见 [`CLAUDE.md`](CLAUDE.md)，Task MD 协议见 [`docs/tasks/README.md`](docs/tasks/README.md)。英文版见 [`README.en.md`](README.en.md)、[`AGENTS.en.md`](AGENTS.en.md) 和 [`CLAUDE.en.md`](CLAUDE.en.md)。
 
+## 装进你的项目
+
+把下面这段话交给能读写目标仓库的 Agent，它就能完成安装：
+
+```text
+把 https://github.com/Xavier-GAO-42/light-dashboard 装进当前仓库，保持相对路径：
+1. 复制 tools/board/ 整个目录，以及 docs/tasks/README.md、docs/tasks/README.en.md、docs/tasks/TASK-TEMPLATE.md、AGENTS.md、AGENTS.en.md、CLAUDE.md、CLAUDE.en.md。
+2. 不复制 docs/tasks/active/ 与 docs/tasks/archive/ 中的任务、docs/images/ 和根目录的两份 README。
+3. 在 package.json 的 scripts 中加入 "board": "node tools/board/server.mjs" 和 "board:check": "node tools/board/check.mjs"；没有 package.json 就新建一个。
+4. 在 .gitignore 中加入 docs/tasks/.board.lock。
+5. 如果仓库已有 AGENTS.md 或 CLAUDE.md，不要覆盖，先停下来告诉我。
+6. 运行 npm run board:check，期望输出“无任务”；运行 npm run board，确认 http://127.0.0.1:4790 能打开。
+```
+
+需要 Node.js 20+。`docs/tasks/active/` 和 `docs/tasks/archive/` 会在第一次 `add` 和 `approve` 时自动创建。
+
 ## 适用边界
 
 适合：共享一个本地仓库或能通过 Git 同步、任务可以拆成明确文件边界、希望人类流式监督、又不想部署协作后台的小团队。
