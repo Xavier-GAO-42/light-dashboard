@@ -1,12 +1,12 @@
 # Light Dashboard
 
-**超轻量化多Agent协作交付工作站**
+**超轻量化多 Agent 协作交付工作站**
 
 ## 作者的话
 
-最近在开发一个体量很大的软件项目，横跨代码开发、宣传发布、自动化研究等多条工作线。
+最近在开发一个体量很大的软件项目，横跨代码开发、宣传发布、自动化研究等多种工作。
 
-我在本地电脑上搭了一套无后台、近乎零依赖、以 Markdown 为唯一事实源的超轻量协议，让五个 GPT-6 线程和 Fable 共享信息、自主协调，再通过网页看板按顺序交付；人类则可以全程流式监督。
+我在本地电脑上搭了一套无后台、近乎零依赖、以 Markdown 为唯一事实源的超轻量协议，让五个 GPT-6 线程和 Fable 共享信息、自主协调，再通过网页按顺序交付；人类则可以全程流式监督。
 
 有意思的是，就在几个月前，用一模一样的方法运行 GPT-5.5 集群时，仍然需要一个“总设计师（塔台）”做中央协调。现在，五个主线程和大量子 Agent 已经可以去中心化地高效合作，摩擦非常低。
 
@@ -22,54 +22,91 @@
 
 ![大量任务在本地 HTML 看板中并行推进和顺序交付](docs/images/03-task-dashboard-overview.jpg)
 
-*图 3：多个模型并行交付 Task MD，并直接在本地 HTML 看板中可视化。*
+*图 3：早期项目中的 Task MD 可视化；本仓库已经去掉图中的固定业务线。*
 
 ![Task MD 的计划、进展和多轮结果在网页中展开](docs/images/04-task-md-streaming-details.jpg)
 
-*图 4：Task MD 的 Prompt、计划、进展与多轮结果直接成为网页中的监督界面。*
+*图 4：Task MD 的 Prompt、计划、进展与结果直接成为监督界面。*
 
 ---
 
-Light Dashboard 是一套把人类、Fable 5 与 GPT-6 放在同一条可审计交付链上的极简协作模板。它不用数据库，不维护隐藏状态：任务、计划、进展、审核记录都直接写在 Git 可追踪的 Markdown 文件里；网页和 CLI 只是同一份事实的两个入口。
+Light Dashboard 不是项目管理平台，而是一份很小的多 Agent 协作协议：每个任务是一个 Markdown 文件，Agent 直接读写，人类通过本地网页观察。没有账号、数据库、消息总线、固定组织结构，也没有隐藏状态。
 
-## 它解决什么
+## 第一性原理
 
-- Fable 5 负责理解需求、拆分边界、协调和验收。
-- GPT-6 负责边界清楚的实现、验证与证据整理。
-- 人类可以打开本地网页，流式查看 Task MD 中不断更新的计划和进展，并最终审核归档。
-- Agent 交接只依赖任务文件与 Git 状态，不依赖某段聊天是否仍在上下文里。
+### 1. 共享事实必须可见
 
-## 开始使用
+聊天上下文属于某个线程，不能充当团队状态。Task MD 才是所有 Agent 和人类共同读取、Git 可以追踪的交付事实。
 
-需要 Node.js 20 或更新版本，无第三方依赖。
+### 2. 协作靠所有权，不靠中央调度
+
+一个任务一个文件，一个文件同一时刻一个负责人。Agent 看到互不重叠的任务可以并行；发生重叠就串行或交接。系统不需要“塔台”逐条转发消息。
+
+### 3. 进展就是正文，不是新状态机
+
+执行者在 Task MD 中写 `## 计划`、`## 进展` 和验证证据。人类看到的是实际工作内容，不是一个可能失真的 `doing` 灯。
+
+### 4. 交付与审核分开
+
+状态只有 `todo → review → done`。Agent 完成工作后提交 `review`；人类通过后才归档。代码是否合并，可以由具体项目另行约定。
+
+### 5. 网页只是投影
+
+网页每两秒重新读取 Markdown，只负责搜索、分组、查看和复制执行 Prompt。关掉网页，协议照常工作；删除网页，Task MD 仍然完整。
+
+## 最小架构
+
+```text
+Agent / Human
+      │ 直接读写
+      ▼
+docs/tasks/active/*.md ──approve──▶ docs/tasks/archive/*.md
+      │
+      └── 本地只读 HTTP 投影 ──▶ 浏览器流式监督
+```
+
+任务只有四个必填字段：`id`、`title`、`status`、`created`。`owner`、`stream`、`due` 都是可选提示，不是权限系统。
+
+`stream` 是任意文本。Agent 可以按当下工作自行创建 `frontend`、`research/model-memory`、`launch-week`，或完全不分流。仓库不预设 L / G / P / R，也不限制能有多少条线。
+
+## 30 秒开始
+
+需要 Node.js 20+，无需安装依赖。
 
 ```powershell
 npm run board
 ```
 
-浏览器打开 `http://127.0.0.1:4790`。新任务也可以直接用 CLI 创建：
+打开 `http://127.0.0.1:4790`。另一个终端新建任务：
 
 ```powershell
-node tools/board/task.mjs add --line P --phase 0 --title "实现一个可验收的小功能" --owner gpt-6
-node tools/board/task.mjs list
+node tools/board/task.mjs add --title "交付一个可验证结果" --owner gpt-6 --stream frontend
 ```
 
-协作约定见 [`AGENTS.md`](AGENTS.md)，Claude/Fable 入口见 [`CLAUDE.md`](CLAUDE.md)，Task Markdown 协议见 [`docs/tasks/README.md`](docs/tasks/README.md)，工具命令见 [`tools/board/README.md`](tools/board/README.md)。
+Agent 工作完成后：
 
-## 核心原则
+```powershell
+node tools/board/task.mjs done <id> --feedback "实现结果与验证证据"
+node tools/board/task.mjs show <id>
+npm run board:check
+```
 
-1. `docs/tasks/` 是唯一任务事实；网页、CLI 和 Agent 不另建台账。
-2. 修改前写计划，执行中持续写进展，完成后由执行者提交待审核。
-3. 人类审核决定归档；代码合并与任务归档是两个动作。
-4. 一个文件同一时刻只有一个负责人；并行发生在互不重叠的边界上。
-5. 删除数据、公开发布、付费、密钥和其他不可逆操作始终需要明确授权。
+人类验收后：
 
-## 仓库结构
+```powershell
+node tools/board/task.mjs approve <id>
+```
+
+协作约定见 [`AGENTS.md`](AGENTS.md)，Claude/Fable 入口见 [`CLAUDE.md`](CLAUDE.md)，Task MD 协议见 [`docs/tasks/README.md`](docs/tasks/README.md)。
+
+## 文件
 
 ```text
-AGENTS.md                 通用 Agent 协作规则
-CLAUDE.md                 Fable / Claude 的短入口 Prompt
-docs/tasks/               Markdown 任务与协议
-tools/board/              零依赖网页看板和 CLI
-package.json              启动与检查命令
+AGENTS.md                    Agent 通用协作规则
+CLAUDE.md                    Fable / Claude 极短入口
+docs/tasks/active/           活动任务
+docs/tasks/archive/          已验收任务
+tools/board/task.mjs         最小 CLI
+tools/board/server.mjs       只读本地网页
+tools/board/index.html       单文件界面
 ```

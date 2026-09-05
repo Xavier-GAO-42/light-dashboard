@@ -1,32 +1,27 @@
-# 零依赖任务看板
+# 最小工具层
 
-这个目录提供一个 Node.js 内置模块实现的本地网页和 CLI。两者都直接读写 `docs/tasks/`；看板只监听 `127.0.0.1`，不需要数据库、账号或云服务。
-
-## 启动
-
-```powershell
-npm run board
-node tools/board/server.mjs --port 4790 --root D:\path\to\repo
-```
-
-默认地址是 `http://127.0.0.1:4790`。页面支持搜索、建任务、编辑、拖动排序、标签、提交审核、打回、归档与每 2 秒自动刷新。任务卡上的“复制 Prompt”会生成带任务 id 的通用执行指令；节能模式会额外建议把边界清楚的重活交给 GPT-6。
+工具层只做两件事：安全地修改 Task MD，以及把它们投影成一个本地只读网页。没有数据库、前端框架、账号、固定业务线或远程服务。
 
 ## CLI
 
 ```text
-node tools/board/task.mjs list [--line P] [--phase 0] [--status todo|review|done] [--json]
+node tools/board/task.mjs list [--status todo|review|done] [--stream name] [--owner name] [--json]
 node tools/board/task.mjs show <id>
-node tools/board/task.mjs add --line P --phase 0 --title "…" [--owner gpt-6] [--tags a,b]
-node tools/board/task.mjs set <id> [--title …] [--owner …] [--track …] [--due …] [--body-file …]
-node tools/board/task.mjs move <id> --line L --phase 0 [--priority N]
+node tools/board/task.mjs add --title "…" [--owner name] [--stream any/name] [--due YYYY-MM-DD] [--body-file path]
 node tools/board/task.mjs done <id> --feedback "结果与证据"
 node tools/board/task.mjs reject <id> --reason "打回原因"
 node tools/board/task.mjs approve <id>
-node tools/board/task.mjs unarchive <id>
-node tools/board/task.mjs delete <id> --yes
 ```
 
-所有命令可加 `--root <仓库根>`。完整数据协议见 [`../../docs/tasks/README.md`](../../docs/tasks/README.md)。
+所有命令可加 `--root <仓库根>`。写操作用一个短暂的 `.board.lock` 串行，并通过临时文件 + rename 原子落盘。锁不保存业务状态。
+
+## 网页
+
+```powershell
+npm run board
+```
+
+打开 `http://127.0.0.1:4790`。网页只有读取、搜索、按自由 stream 过滤、查看正文和复制执行 Prompt；所有修改都回到 Markdown，因此不存在第二个写入协议。
 
 ## 检查
 
@@ -34,4 +29,4 @@ node tools/board/task.mjs delete <id> --yes
 npm run board:check
 ```
 
-检查器验证 frontmatter、目录与状态、id 唯一性、阶段优先级、标签引用和归档位置。没有任务时输出“无任务”并成功退出。
+检查器验证必填字段、id 与文件名、状态与目录、日期、未知字段和重复 id。

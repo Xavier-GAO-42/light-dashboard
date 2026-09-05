@@ -2,80 +2,71 @@
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Light Dashboard</title>
-  <link rel="stylesheet" href="/board.css">
+  <style>
+    :root{color-scheme:light;--ink:#17202b;--muted:#667085;--line:#e1e5ea;--paper:#fff;--bg:#f5f6f8;--blue:#3157d5;--amber:#bb7a12}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 Inter,"Segoe UI","Microsoft YaHei",sans-serif}header{position:sticky;top:0;z-index:2;display:flex;gap:12px;align-items:center;padding:15px max(20px,4vw);background:rgba(255,255,255,.95);border-bottom:1px solid var(--line);backdrop-filter:blur(10px)}h1{margin:0 auto 0 0;font-size:18px}input,select,button{font:inherit;border:1px solid var(--line);border-radius:8px;background:#fff;padding:8px 11px}input{width:min(360px,32vw)}main{max-width:1200px;margin:auto;padding:24px}.intro{color:var(--muted);margin:0 0 20px}.summary{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}.pill{padding:4px 9px;border-radius:999px;background:#e9ecf1;color:var(--muted)}.stream{margin:26px 0}.stream h2{font-size:15px;margin:0 0 10px}.columns{display:grid;grid-template-columns:2fr 1fr;gap:16px}.columns.done{grid-template-columns:1fr}.column h3{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}.card{margin:9px 0;padding:15px;border:1px solid var(--line);border-radius:10px;background:var(--paper);box-shadow:0 1px 2px #10182808;cursor:pointer}.card.review{border-left:3px solid var(--amber)}.card:hover{border-color:#b9c2cf}.card-head{display:flex;gap:12px}.card strong{flex:1;font-size:15px}.copy{border:0;padding:1px 3px;color:var(--blue)}.meta{margin-top:8px;color:var(--muted);font-size:12px}.empty{padding:48px;text-align:center;color:var(--muted)}dialog{width:min(820px,calc(100vw - 32px));max-height:calc(100vh - 32px);border:1px solid var(--line);border-radius:12px;padding:0}dialog::backdrop{background:#11182766}.dialog-head{display:flex;align-items:center;padding:18px 22px;border-bottom:1px solid var(--line)}.dialog-head h2{margin:0;font-size:18px}.dialog-head button{margin-left:auto;border:0;font-size:20px}.dialog-body{padding:20px 22px}.path{color:var(--muted);font-family:ui-monospace,monospace}pre{white-space:pre-wrap;word-break:break-word;background:#f7f8fa;border:1px solid var(--line);border-radius:8px;padding:16px}.error{color:#b42318}@media(max-width:760px){header{flex-wrap:wrap}h1{width:100%}input{flex:1;width:auto}.columns{grid-template-columns:1fr}main{padding:18px}}
+  </style>
 </head>
 <body>
-  <header class="topbar">
-    <div class="brand"><span class="brand-mark">L</span><span>Light Dashboard</span></div>
-    <div class="search-tools">
-      <label class="search"><span aria-hidden="true">⌕</span><input id="search" type="search" placeholder="搜索标题、正文、负责人或标签…" autocomplete="off"></label>
-      <button id="clear-search" class="clear-search" type="button" hidden>清除</button>
-    </div>
-    <button id="new-task" class="primary">新建任务</button>
-    <button id="manage-tags">自定义标签</button>
-    <button id="energy-saving" class="energy-saving" type="button" role="switch" aria-checked="false" aria-label="节能模式" title="开启后，复制 Prompt 将加入子 Agent / GPT-6 委派建议，以减少协调 Agent 的上下文消耗">
-      <span class="switch-track" aria-hidden="true"></span><span>节能模式</span><span id="energy-saving-state">关</span>
-    </button>
+  <header>
+    <h1>Light Dashboard</h1>
+    <input id="search" type="search" placeholder="搜索任务、负责人或正文…">
+    <select id="stream" aria-label="按 stream 筛选"><option value="">全部 stream</option></select>
+    <select id="scope" aria-label="按状态筛选"><option value="active">活动任务</option><option value="done">已归档</option></select>
   </header>
-  <nav id="tabs" class="tabs" aria-label="任务线">
-    <button class="tab active" data-view="inbox">inbox · 提醒 <span></span></button>
-    <button class="tab" data-view="L">L · 发行 <span></span></button>
-    <button class="tab" data-view="G">G · 增长 <span></span></button>
-    <button class="tab" data-view="P">P · 产品 <span></span></button>
-    <button class="tab" data-view="R">R · 研究 <span></span></button>
-    <button class="tab" data-view="archive">归档 <span></span></button>
-  </nav>
-  <main id="board" aria-live="polite"><div class="loading">正在读取任务…</div></main>
-
-  <dialog id="task-dialog" class="dialog task-dialog">
-    <form id="task-form" method="dialog">
-      <div class="dialog-head"><h2 id="task-dialog-title">任务详情</h2><button type="button" class="icon close-dialog" aria-label="关闭">×</button></div>
-      <div class="form-grid">
-        <label class="wide">标题<input name="title" required maxlength="240"></label>
-        <label>线<select name="line"><option value="inbox">inbox · 提醒</option><option value="L">L · 发行</option><option value="G">G · 增长</option><option value="P">P · 产品</option><option value="R">R · 研究</option></select></label>
-        <label>阶段<input name="phase" type="number" min="0" max="9"></label>
-        <label>负责人<input name="owner" placeholder="human / fable / codex / 人名"></label>
-        <label>轨道<input name="track" placeholder="A–F、C+A 或 all"></label>
-        <label>截止日<input name="due" type="date"></label>
-        <fieldset class="wide"><legend>标签</legend><div class="task-tag-tools"><div id="task-tags" class="tag-choices"></div><button id="quick-add-tag" type="button" class="quick-add-tag" aria-label="为当前任务线快速新建标签">+</button></div></fieldset>
-        <label class="wide">Prompt<textarea name="body" rows="12" placeholder="写给 AI 的任务 Prompt，支持 Markdown"></textarea></label>
-      </div>
-      <p id="inbox-note" class="hint" hidden>这是提醒，不是任务：它不进「完成 → 审核」。要做它，把上面的「线」改成 L / G / P / R 并填阶段再保存；不做就删掉。</p>
-      <section id="task-history" class="task-history" hidden>
-        <h3>记录 <span id="history-count" class="count"></span></h3>
-        <ol id="history-list" class="history-list"></ol>
-      </section>
-      <div class="dialog-actions">
-        <button id="delete-task" type="button" class="danger">删除</button>
-        <span class="spacer"></span>
-        <button type="button" class="close-dialog">取消</button>
-        <button id="save-task" type="submit" class="primary">保存</button>
-        <button id="state-action" type="button" class="primary"></button>
-        <button id="reject-task" type="button" class="danger">打回</button>
-      </div>
-    </form>
-  </dialog>
-
-  <dialog id="prompt-dialog" class="dialog prompt-dialog">
-    <form id="prompt-form" method="dialog">
-      <div class="dialog-head"><h2 id="prompt-title"></h2><button type="button" class="icon close-prompt" aria-label="关闭">×</button></div>
-      <label><span id="prompt-label"></span><textarea id="prompt-value" rows="7" required></textarea></label>
-      <div class="dialog-actions"><span class="spacer"></span><button type="button" class="close-prompt">取消</button><button type="submit" class="primary">确认</button></div>
-    </form>
-  </dialog>
-
-  <dialog id="tags-dialog" class="dialog tags-dialog">
-    <div class="dialog-head"><h2>自定义标签</h2><button type="button" class="icon close-tags" aria-label="关闭">×</button></div>
-    <label class="tag-line-picker">任务线<select id="tags-line"><option value="inbox">inbox</option><option value="L">L · 发行</option><option value="G">G · 增长</option><option value="P">P · 产品</option><option value="R">R · 研究</option></select></label>
-    <form id="new-tag-form" class="new-tag"><input name="name" placeholder="标签名" required><input name="color" type="color" value="#5269a8"><button class="primary">新建</button></form>
-    <p class="hint">每条线维护自己的标签；拖动可排序。删除标签时，会同时从该线引用它的任务中移除。</p>
-    <div id="tag-list" class="tag-list"></div>
-  </dialog>
-
-  <form id="tag-delete-form" method="post" hidden></form>
-  <div id="toast" role="status" aria-live="polite"></div>
-  <script type="module" src="/board.js?v=1"></script>
+  <main>
+    <p class="intro">网页是只读投影。Agent 直接更新 <code>docs/tasks/</code>，这里每两秒刷新一次。</p>
+    <div id="summary" class="summary"></div>
+    <div id="board"><div class="empty">正在读取 Task MD…</div></div>
+  </main>
+  <dialog id="details"><div class="dialog-head"><h2></h2><button aria-label="关闭">×</button></div><div class="dialog-body"></div></dialog>
+  <script>
+    const state={tasks:[],query:'',stream:'',scope:'active'};
+    const board=document.querySelector('#board');
+    const details=document.querySelector('#details');
+    const escapeHtml=(value)=>String(value??'').replace(/[&<>"']/g,(character)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[character]));
+    const visible=(task)=>{
+      const scope=state.scope==='done'?task.status==='done':task.status!=='done';
+      const stream=!state.stream||(task.stream??'未分流')===state.stream;
+      const haystack=[task.title,task.owner,task.stream,task.body].join(' ').toLocaleLowerCase();
+      return scope&&stream&&haystack.includes(state.query);
+    };
+    function promptFor(task){return `执行任务 ${task.id}，遵循 AGENTS.md。\n先运行 node tools/board/task.mjs show ${task.id}，读取 Task MD 与当前 Git 状态；修改前写计划，执行中持续写进展。完成并验证后运行 node tools/board/task.mjs done ${task.id} --feedback "结果与验证证据"，再次 show 确认 review，再运行 npm run board:check。不要自行 approve。`;}
+    function card(task){return `<article class="card ${task.status}" data-id="${escapeHtml(task.id)}"><div class="card-head"><strong>${escapeHtml(task.title)}</strong>${task.status!=='done'?'<button class="copy">复制 Prompt</button>':''}</div><div class="meta">${escapeHtml(task.id)} · ${escapeHtml(task.status)}${task.owner?` · ${escapeHtml(task.owner)}`:''}${task.due?` · 截止 ${escapeHtml(task.due)}`:''}</div></article>`;}
+    function render(){
+      const tasks=state.tasks.filter(visible);
+      const counts=Object.fromEntries(['todo','review','done'].map(status=>[status,state.tasks.filter(task=>task.status===status).length]));
+      document.querySelector('#summary').innerHTML=`<span class="pill">todo ${counts.todo}</span><span class="pill">review ${counts.review}</span><span class="pill">done ${counts.done}</span>`;
+      const groups=tasks.reduce((map,task)=>{const key=task.stream??'未分流';if(!map.has(key))map.set(key,[]);map.get(key).push(task);return map;},new Map());
+      board.innerHTML=[...groups].sort(([a],[b])=>a.localeCompare(b)).map(([stream,items])=>{
+        const todo=items.filter(task=>task.status==='todo'); const review=items.filter(task=>task.status==='review'); const done=items.filter(task=>task.status==='done');
+        const content=state.scope==='done'?`<div class="columns done"><div class="column"><h3>已归档</h3>${done.map(card).join('')}</div></div>`:`<div class="columns"><div class="column"><h3>待完成</h3>${todo.map(card).join('')||'<div class="empty">—</div>'}</div><div class="column"><h3>待审核</h3>${review.map(card).join('')||'<div class="empty">—</div>'}</div></div>`;
+        return `<section class="stream"><h2>${escapeHtml(stream)} <span class="pill">${items.length}</span></h2>${content}</section>`;
+      }).join('')||'<div class="empty">没有匹配的任务</div>';
+    }
+    function updateStreams(){
+      const select=document.querySelector('#stream'); const previous=select.value;
+      const names=[...new Set(state.tasks.map(task=>task.stream??'未分流'))].sort();
+      select.innerHTML='<option value="">全部 stream</option>'+names.map(name=>`<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join('');
+      if(names.includes(previous)) select.value=previous;
+    }
+    async function refresh(){
+      if(document.hidden||details.open)return;
+      try{const response=await fetch('/api/tasks',{cache:'no-store'});if(!response.ok)throw new Error(`HTTP ${response.status}`);state.tasks=(await response.json()).tasks;updateStreams();render();}
+      catch(error){board.innerHTML=`<div class="empty error">读取失败：${escapeHtml(error.message)}</div>`;}
+    }
+    board.addEventListener('click',async(event)=>{
+      const element=event.target.closest('.card');if(!element)return;const task=state.tasks.find(item=>item.id===element.dataset.id);if(!task)return;
+      if(event.target.closest('.copy')){event.stopPropagation();await navigator.clipboard.writeText(promptFor(task));event.target.textContent='已复制';return;}
+      details.querySelector('h2').textContent=task.title;details.querySelector('.dialog-body').innerHTML=`<p class="path">${escapeHtml(task.relativePath)}</p><pre>${escapeHtml(task.body)}</pre>`;details.showModal();
+    });
+    details.querySelector('button').addEventListener('click',()=>details.close());
+    details.addEventListener('close',refresh);
+    document.querySelector('#search').addEventListener('input',event=>{state.query=event.target.value.trim().toLocaleLowerCase();render();});
+    document.querySelector('#stream').addEventListener('change',event=>{state.stream=event.target.value;render();});
+    document.querySelector('#scope').addEventListener('change',event=>{state.scope=event.target.value;render();});
+    refresh();setInterval(refresh,2000);
+  </script>
 </body>
 </html>

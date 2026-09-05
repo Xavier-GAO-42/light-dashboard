@@ -1,11 +1,9 @@
 ---
 id: t-YYYYMMDD-a1b2
 title: 一句话说明可验收结果
-line: P
-phase: 0
-priority: 1
 status: todo
-owner: gpt-6
+owner: agent-name
+stream: optional/free-form
 created: YYYY-MM-DD
 ---
 
@@ -15,7 +13,7 @@ created: YYYY-MM-DD
 
 ## 计划
 
-预计修改范围、文件和验证方式。
+预计修改文件和验证方式。
 
 ## 进展
 
