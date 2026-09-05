@@ -1,0 +1,14 @@
+{
+  "name": "light-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A lightweight Markdown-backed multi-agent delivery workstation.",
+  "type": "module",
+  "scripts": {
+    "board": "node tools/board/server.mjs",
+    "board:check": "node tools/board/check.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
